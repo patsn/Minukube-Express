@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-deployment
+  labels:
+    app: express
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: express
+  template:
+    metadata:
+      name: express-pod
+      labels:
+        app: express
+    spec:
+      containers:
+        - name: express
+          image: imagetest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+          env:
+            - name: CONTAINER_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-service-clusterip
+  labels:
+    app: express
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3001
+      targetPort: 3000
+  selector:
+    app: express
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-service-nodeport
+  labels:
+    app: express
+spec:
+  type: NodePort
+  ports:
+    - port: 3001 # Port des Services
+      targetPort: 3000 # Port des Pods
+      nodePort: 30001 # Optional: Kubernetes wählt einen Port, wenn nicht angegeben
+  selector:
+    app: express
